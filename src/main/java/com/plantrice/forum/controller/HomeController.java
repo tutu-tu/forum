@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 //视图层，有controller，数据模型和页面
+//首页的页面控制器
 @Controller
 public class HomeController {
 

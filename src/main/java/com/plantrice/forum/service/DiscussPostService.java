@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-//业务逻辑层
+//业务逻辑层（帖子的）
 @Service
 public class DiscussPostService {
 
