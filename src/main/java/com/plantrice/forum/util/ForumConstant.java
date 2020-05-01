@@ -24,7 +24,7 @@ public interface ForumConstant {
     int DEFAULT_EXPIRED_SECONDS = 3600 * 12;
 
     /**
-     * 记住状态下的登录凭证超时时间
+     * 记住状态下的登录凭证超时时间，5天
      */
-    int REMEMBER_EXPIRED_SECONDS = 3600 * 24 * 50;
+    int REMEMBER_EXPIRED_SECONDS = 3600 * 24 * 5;
 }
