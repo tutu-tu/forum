@@ -3,6 +3,7 @@ package com.plantrice.forum.dao;
 import com.plantrice.forum.entity.LoginTicket;
 import org.apache.ibatis.annotations.*;
 
+
 @Mapper
 public interface LoginTicketMapper {
 

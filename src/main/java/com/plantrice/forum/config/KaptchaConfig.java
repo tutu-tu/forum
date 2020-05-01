@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Properties;
 
+//kaptcha一个将数字生成验证码图片的工具
 @Configuration
 public class KaptchaConfig {
 

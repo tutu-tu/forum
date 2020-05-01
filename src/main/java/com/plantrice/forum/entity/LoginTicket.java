@@ -2,6 +2,7 @@ package com.plantrice.forum.entity;
 
 import java.util.Date;
 
+//用户登录凭证表的实体类
 public class LoginTicket {
 
     private int id;

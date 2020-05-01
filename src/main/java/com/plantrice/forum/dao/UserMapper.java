@@ -18,7 +18,7 @@ public interface UserMapper {
     int insertUser(User user);
     //修改状态，返回修改的行数，多少条
     int updateStatus(int id, int status);
-    //跟新头像的路径
+    //更新头像的路径
     int updateHeader(int id, String headerUrl);
     //更新密码
     int updatePassword(int id, String password);

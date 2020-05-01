@@ -33,7 +33,7 @@ public class UserService implements ForumConstant {
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
-    @Value("${forum.paht.domain}")
+    @Value("${forum.path.domain}")
     private String domain;
 
     //根据id查询用户信息
@@ -114,5 +114,12 @@ public class UserService implements ForumConstant {
         }else{
             return ACTIVATION_FAILURE;
         }
+    }
+
+
+
+    //更改头像
+    public int updateHeader(int userId, String headerUrl) {
+        return userMapper.updateHeader(userId, headerUrl);
     }
 }

@@ -78,9 +78,6 @@ public class LoginTicketService {
         return loginTicketMapper.selectByTicket(ticket);
     }
 
-    //更改头像
-    public int updateHeader(int userId, String headerUrl) {
-        return userMapper.updateHeader(userId, headerUrl);
-    }
+
 
 }

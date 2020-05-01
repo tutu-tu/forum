@@ -14,14 +14,16 @@ body {
 	height: auto;
 	min-height: 100%;
 }
-
+.bg-dark {
+	background-color: gray!important;
+}
 .container {
 	width: 960px;
 	padding: 0;
 }
 
 header .navbar-brand {
-	background: url('http://static.nowcoder.com/images/res/logo/logo-v3.png') no-repeat;
+	background-image: url('../img/newbForum.png');
 	background-size: 147px 42px;
 	width: 147px;
 	height: 42px;
