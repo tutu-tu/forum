@@ -23,6 +23,8 @@ public interface DiscussPostMapper {
     //插入帖子
     int insertDiscussPost(DiscussPost discussPost);
 
+    //通过id查找帖子的所有内容
     DiscussPost selectDiscussPostById(int id);
 
+    int updateCommentCount(int id, int commentCount);
 }
