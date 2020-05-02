@@ -27,4 +27,14 @@ public interface ForumConstant {
      * 记住状态下的登录凭证超时时间，5天
      */
     int REMEMBER_EXPIRED_SECONDS = 3600 * 24 * 5;
+
+    /**
+     * 实体类型：评论帖子
+     */
+    int ENTITY_TYPE_POST = 1;
+
+    /**
+     * 实体类型：评论评论
+     */
+    int ENTITY_TYPE_COMMENT = 2;
 }
