@@ -116,10 +116,13 @@ public class UserService implements ForumConstant {
         }
     }
 
-
-
     //更改头像
     public int updateHeader(int userId, String headerUrl) {
         return userMapper.updateHeader(userId, headerUrl);
+    }
+
+    //通过用户名寻找用户信息
+    public User findUserByName(String username){
+        return userMapper.selectByName(username);
     }
 }

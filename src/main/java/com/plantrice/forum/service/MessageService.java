@@ -2,8 +2,10 @@ package com.plantrice.forum.service;
 
 import com.plantrice.forum.dao.MessageMapper;
 import com.plantrice.forum.entity.Message;
+import com.plantrice.forum.util.SensitiveFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -13,6 +15,9 @@ public class MessageService {
 
     @Autowired
     private MessageMapper messageMapper;
+
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
 
     //查询私信列表
     public List<Message> findConversations(int userId, int offset, int limit) {
@@ -38,5 +43,18 @@ public class MessageService {
     public int findLetterUnreadCount(int userId, String conversationId) {
         return messageMapper.selectLetterUnreadCount(userId, conversationId);
     }
+
+    //增加消息
+    public int addMessage(Message message) {
+        message.setContent(HtmlUtils.htmlEscape(message.getContent()));
+        message.setContent(sensitiveFilter.filter(message.getContent()));
+        return messageMapper.insertMessage(message);
+    }
+
+    //已读
+    public int readMessage(List<Integer> ids) {
+        return messageMapper.updateStatus(ids, 1);
+    }
+
 
 }
