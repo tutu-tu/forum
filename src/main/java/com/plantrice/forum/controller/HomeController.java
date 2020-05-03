@@ -56,5 +56,10 @@ public class HomeController {
         //返回模板的路径
         return "/index";
     }
+    //controller发生500错误的接口
+    @RequestMapping(path = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "/error/500";
+    }
 
 }
