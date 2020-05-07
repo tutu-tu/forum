@@ -14,6 +14,9 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 敏感词过滤的工具类
+ */
 @Component
 public class SensitiveFilter {
 

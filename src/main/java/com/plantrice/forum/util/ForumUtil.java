@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
+/**
+ * 生成随机字符串和加密
+ */
 public class ForumUtil {
 
     //生成随机字符串
@@ -20,6 +22,7 @@ public class ForumUtil {
     }
 
     //MD5加密    有两个体点  1.只能加密，不能解密
+    //isBlank 判断是否为空白
     public static String md5(String key){
         if (StringUtils.isBlank(key)){
             return null;

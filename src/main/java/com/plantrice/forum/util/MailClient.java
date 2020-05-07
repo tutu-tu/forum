@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-//邮件的客户端
+/**
+ *邮件的客户端
+ */
 @Component
 public class MailClient {
 

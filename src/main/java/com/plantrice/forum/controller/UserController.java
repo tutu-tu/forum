@@ -2,7 +2,6 @@ package com.plantrice.forum.controller;
 
 import com.plantrice.forum.annotation.LoginRequired;
 import com.plantrice.forum.entity.User;
-import com.plantrice.forum.service.LoginTicketService;
 import com.plantrice.forum.service.UserService;
 import com.plantrice.forum.util.ForumUtil;
 import com.plantrice.forum.util.HostHolder;
@@ -44,9 +43,6 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private LoginTicketService loginTicketService;
 
     @Autowired
     private HostHolder hostHolder;

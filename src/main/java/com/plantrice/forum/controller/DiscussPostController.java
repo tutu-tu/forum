@@ -6,6 +6,7 @@ import com.plantrice.forum.entity.Page;
 import com.plantrice.forum.entity.User;
 import com.plantrice.forum.service.CommentService;
 import com.plantrice.forum.service.DiscussPostService;
+import com.plantrice.forum.service.LikeService;
 import com.plantrice.forum.service.UserService;
 import com.plantrice.forum.util.ForumConstant;
 import com.plantrice.forum.util.ForumUtil;
@@ -36,6 +37,8 @@ public class DiscussPostController implements ForumConstant {
 
     @Autowired
     private CommentService commentService;
+    @Autowired
+    private LikeService likeService;
 
     //发布帖子的接口，
     @RequestMapping(path = "/add",method = RequestMethod.POST)
@@ -64,6 +67,13 @@ public class DiscussPostController implements ForumConstant {
         //作者
         User user =  userService.findUserById(post.getUserId());
         model.addAttribute("user",user);
+        //点赞
+        long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST,post.getId());
+        model.addAttribute("likeCount",likeCount);
+        //如果没有用户信息，没有登录，但是还是要显示赞，状态返回0，
+        int likeStatus = hostHolder.getUser() == null ? 0 :
+            likeService.findEntityLikeStatus(hostHolder.getUser().getId(),ENTITY_TYPE_POST,post.getId());
+        model.addAttribute("likeStatus",likeStatus);
         //评论的分页信息
         page.setLimit(5);
         page.setPath("/discuss/detail/"+discussPostId);
@@ -81,6 +91,13 @@ public class DiscussPostController implements ForumConstant {
                 commentVo.put("comment",comment);
                 //评论的作者
                 commentVo.put("user",userService.findUserById(comment.getUserId()));
+                //点赞
+                likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT,comment.getId());
+                commentVo.put("likeCount",likeCount);
+                //如果没有用户信息，没有登录，但是还是要显示赞，状态返回0，
+                likeStatus = hostHolder.getUser() == null ? 0 :
+                        likeService.findEntityLikeStatus(hostHolder.getUser().getId(),ENTITY_TYPE_COMMENT,comment.getId());
+                commentVo.put("likeStatus",likeStatus);
 
                 //评论的评论（回复，二级评论）从零开始 Integer.MAX_VALUE 有多少查多少
                 List<Comment> replyList = commentService.findCommentByEntity(ENTITY_TYPE_COMMENT,comment.getId(),0,Integer.MAX_VALUE);
@@ -96,6 +113,13 @@ public class DiscussPostController implements ForumConstant {
                         //回复的目标  处理target == 0 说明没有回复目标
                        User target =  reply.getTargetId() == 0 ? null : userService.findUserById(reply.getTargetId());
                        replyVo.put("target",target);
+                        //点赞
+                       likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_COMMENT,reply.getId());
+                        replyVo.put("likeCount",likeCount);
+                        //如果没有用户信息，没有登录，但是还是要显示赞，状态返回0，
+                        likeStatus = hostHolder.getUser() == null ? 0 :
+                                likeService.findEntityLikeStatus(hostHolder.getUser().getId(),ENTITY_TYPE_COMMENT,reply.getId());
+                        replyVo.put("likeStatus",likeStatus);
                        //把最终的数据装到集合里
                        replyVoList.add(replyVo);
                     }

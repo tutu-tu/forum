@@ -4,7 +4,9 @@ import com.plantrice.forum.entity.DiscussPost;
 import com.plantrice.forum.entity.Page;
 import com.plantrice.forum.entity.User;
 import com.plantrice.forum.service.DiscussPostService;
+import com.plantrice.forum.service.LikeService;
 import com.plantrice.forum.service.UserService;
+import com.plantrice.forum.util.ForumConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,13 +21,15 @@ import java.util.Map;
 //视图层，有controller，数据模型和页面
 //首页的页面控制器
 @Controller
-public class HomeController {
+public class HomeController implements ForumConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private LikeService likeService;
 
     //requestMapper 访问路径    method 请求方式
     //方法响应的是网页，不能写@RespondBody
@@ -49,6 +53,8 @@ public class HomeController {
                 //调用userService把user查出来
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST,post.getId());
+                map.put("likeCount",likeCount);
                 discussPosts.add(map);
             }
         }

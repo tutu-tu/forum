@@ -3,6 +3,9 @@ package com.plantrice.forum.util;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Cookie判断的工具类
+ */
 public class CookieUtil {
 
     //从cookie中取值，首先传入request对象，告诉你要取得值的name是什么
