@@ -13,6 +13,8 @@ public class RedisKeyUtil {
     //前缀
     private static final String PREFIX_ENTITY_LIKE = "like:entity";
     private static final String PREFIX_USER_LIKE = "like:user";
+    private static final String PREFIX_FOLLOWER = "follower";
+    private static final String PREFIX_FOLLOWEE = "followee";
 
     //某个实体的赞的key
     //like:entity:entityType:entityId  -->set(userId)  将来可能通过userId去查找谁点的赞
@@ -24,5 +26,17 @@ public class RedisKeyUtil {
     //like:user:userId   -->int
     public static String getUserKeyLike(int userId){
         return PREFIX_USER_LIKE+SPLIT+userId;
+    }
+
+    //某用户关注的实体（用户，帖子等信息，所以是实体）
+    //followee:userId:entityType  -->Zset(entityId,now date())
+    public static String getFolloweeKey(int userId,int entityType){
+        return PREFIX_FOLLOWEE+SPLIT+userId+SPLIT+entityType;
+    }
+
+    //某个实体拥有的粉丝
+    //follower：entityType:entityId  -->Zset(userId,now date())
+    public static String getFollowerKey(int entityType,int entityId){
+        return PREFIX_FOLLOWER+SPLIT+entityType+SPLIT+entityId;
     }
 }

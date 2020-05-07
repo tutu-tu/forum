@@ -2,8 +2,10 @@ package com.plantrice.forum.controller;
 
 import com.plantrice.forum.annotation.LoginRequired;
 import com.plantrice.forum.entity.User;
+import com.plantrice.forum.service.FollowService;
 import com.plantrice.forum.service.LikeService;
 import com.plantrice.forum.service.UserService;
+import com.plantrice.forum.util.ForumConstant;
 import com.plantrice.forum.util.ForumUtil;
 import com.plantrice.forum.util.HostHolder;
 import org.apache.commons.lang3.StringUtils;
@@ -26,30 +28,27 @@ import java.io.OutputStream;
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements ForumConstant {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     //存放路径
     @Value("${forum.path.upload}")
     private String uploadPath;
-
     //域名，本地，IP地址加端口
     @Value("${forum.path.domain}")
     private String domain;
-
     //项目名
     @Value("${server.servlet.context-path}")
     private String contextPath;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private HostHolder hostHolder;
-
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private FollowService followService;
 
     //账号设置页面的接口
     @LoginRequired
@@ -137,6 +136,18 @@ public class UserController {
         //该用户拥有点赞数量
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount",likeCount);
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(userId,ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount",followeeCount);
+        //粉丝数量
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER,userId);
+        model.addAttribute("followerCount",followerCount);
+        //当前登录用户是否对这个帖子的用户已关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null){
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(),ENTITY_TYPE_USER,userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
 
         return "/site/profile";
     }
