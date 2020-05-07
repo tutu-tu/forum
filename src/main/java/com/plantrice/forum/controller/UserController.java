@@ -2,6 +2,7 @@ package com.plantrice.forum.controller;
 
 import com.plantrice.forum.annotation.LoginRequired;
 import com.plantrice.forum.entity.User;
+import com.plantrice.forum.service.LikeService;
 import com.plantrice.forum.service.UserService;
 import com.plantrice.forum.util.ForumUtil;
 import com.plantrice.forum.util.HostHolder;
@@ -46,6 +47,9 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     //账号设置页面的接口
     @LoginRequired
@@ -119,6 +123,22 @@ public class UserController {
         } catch (IOException e) {
             logger.error("读取头像失败: " + e.getMessage());
         }
+    }
+
+    //个人主页
+    @RequestMapping(path = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId")int userId ,Model model){
+        User user = userService.findUserById(userId);
+        if (user == null){
+            throw new RuntimeException("用户不存在！");
+        }
+        //用户的所有资料
+        model.addAttribute("user",user);
+        //该用户拥有点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",likeCount);
+
+        return "/site/profile";
     }
 
 }
