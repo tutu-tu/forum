@@ -5,8 +5,11 @@ import com.plantrice.forum.dao.UserMapper;
 import com.plantrice.forum.entity.LoginTicket;
 import com.plantrice.forum.entity.User;
 import com.plantrice.forum.util.ForumUtil;
+import com.plantrice.forum.util.RedisKeyUtil;
+import io.lettuce.core.RedisURI;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -19,8 +22,10 @@ public class LoginTicketService {
     @Autowired
     private UserMapper userMapper;
 
+    /*@Autowired
+    private LoginTicketMapper loginTicketMapper;*/
     @Autowired
-    private LoginTicketMapper loginTicketMapper;
+    private RedisTemplate redisTemplate;
 
     //expiredSeconds多久过期
     public Map<String, Object> login(String username, String password, int expiredSeconds) {
@@ -62,7 +67,9 @@ public class LoginTicketService {
         loginTicket.setTicket(ForumUtil.generateUUID());
         loginTicket.setStatus(0);
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
-        loginTicketMapper.insertLoginTicket(loginTicket);
+        //loginTicketMapper.insertLoginTicket(loginTicket);
+        String redisKey = RedisKeyUtil.getTicketKey(loginTicket.getTicket());
+        redisTemplate.opsForValue().set(redisKey,loginTicket);
 
         map.put("ticket", loginTicket.getTicket());
         return map;
@@ -70,12 +77,19 @@ public class LoginTicketService {
 
     //退出，状态无效，则为退出
     public void logout(String ticket) {
-        loginTicketMapper.updateStatus(ticket, 1);
+        //loginTicketMapper.updateStatus(ticket, 1);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        LoginTicket loginTicket = (LoginTicket) redisTemplate.opsForValue().get(redisKey);
+        loginTicket.setStatus(1);
+        redisTemplate.opsForValue().set(redisKey,loginTicket);
+
     }
 
     //查询登录凭证的方法
     public LoginTicket findLoginTicket(String ticket) {
-        return loginTicketMapper.selectByTicket(ticket);
+        //return loginTicketMapper.selectByTicket(ticket);
+        String redisKey = RedisKeyUtil.getTicketKey(ticket);
+        return (LoginTicket) redisTemplate.opsForValue().get(redisKey);
     }
 
 

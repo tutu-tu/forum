@@ -5,9 +5,11 @@ import com.plantrice.forum.entity.User;
 import com.plantrice.forum.util.ForumConstant;
 import com.plantrice.forum.util.ForumUtil;
 import com.plantrice.forum.util.MailClient;
+import com.plantrice.forum.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -16,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 //业务逻辑层（用户的）
 @Service
@@ -23,22 +26,28 @@ public class UserService implements ForumConstant {
 
     @Autowired
     private UserMapper userMapper;
-
     @Autowired
     private MailClient mailClient;
-
     @Autowired
     private TemplateEngine templateEngine;
-
     @Value("${server.servlet.context-path}")
     private String contextPath;
-
     @Value("${forum.path.domain}")
     private String domain;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     //根据id查询用户信息
     public User findUserById(int id) {
-        return userMapper.selectById(id);
+        //return userMapper.selectById(id);
+        //先从缓存中查
+        User user = getCache(id);
+        //如果查不到，初始化缓存
+        if (user == null){
+            user = initCache(id);
+        }
+        //如果查到了返回user信息
+        return user;
     }
 
     //返回的类型很多，用map接收
@@ -110,6 +119,8 @@ public class UserService implements ForumConstant {
         //如果你的激活码是对的，可以激活成功,要把用户的状态改为1
         else if (user.getActivationCode().equals(code)){
             userMapper.updateStatus(userId,1);
+            //修改了用户状态，删除缓存
+            clearCache(userId);
             return ACTIVATION_SUCCESS;
         }else{
             return ACTIVATION_FAILURE;
@@ -118,11 +129,33 @@ public class UserService implements ForumConstant {
 
     //更改头像
     public int updateHeader(int userId, String headerUrl) {
-        return userMapper.updateHeader(userId, headerUrl);
+        //return userMapper.updateHeader(userId, headerUrl);
+        int rows = userMapper.updateHeader(userId,headerUrl);
+        clearCache(userId);
+        return rows;
     }
 
     //通过用户名寻找用户信息
     public User findUserByName(String username){
         return userMapper.selectByName(username);
+    }
+
+    //1.优先从缓存中取数据
+    private User getCache(int userId){
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        return (User) redisTemplate.opsForValue().get(redisKey);
+    }
+    //2.取不到，初始化缓存数据
+    private User initCache(int userId){
+        User user = userMapper.selectById(userId);
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.opsForValue().set(redisKey,user,7200, TimeUnit.SECONDS);
+        return user;
+    }
+
+    //3.数据变更时清除缓存数据
+    private void clearCache(int userId){
+        String redisKey = RedisKeyUtil.getUserKey(userId);
+        redisTemplate.delete(redisKey);
     }
 }

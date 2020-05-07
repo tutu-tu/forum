@@ -5,11 +5,15 @@ import com.plantrice.forum.entity.User;
 import com.plantrice.forum.service.LoginTicketService;
 import com.plantrice.forum.service.UserService;
 import com.plantrice.forum.util.ForumConstant;
+import com.plantrice.forum.util.ForumUtil;
+import com.plantrice.forum.util.RedisKeyUtil;
+import io.lettuce.core.RedisURI;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -25,6 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 @Controller
@@ -35,15 +40,14 @@ public class LoginController implements ForumConstant {
 
     @Value("server.servlet.context-path")
     private String contextPath;
-
     @Autowired
     private UserService userService;
-
     @Autowired
     private LoginTicketService loginTicketService;
-
     @Autowired
     private Producer kaptchaProducer;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     //获取注册路径，返回模板页面，访问注册页面
     @RequestMapping(path = "/register",method = RequestMethod.GET)
@@ -99,15 +103,29 @@ public class LoginController implements ForumConstant {
 
     //生成验证码的方法,返回的是图片，不能用返回参数类型来返回，要用respond来响应
     @RequestMapping(path = "/kaptcha",method = RequestMethod.GET)
-    public void getKaptcha(HttpServletResponse response,
-                           HttpSession session){
+    public void getKaptcha(HttpServletResponse response){
         //生成验证码,
         //生成四位的随机字符串
         String text = kaptchaProducer.createText();
         //用text字符串，去画一个图
         BufferedImage image = kaptchaProducer.createImage(text);
         //将验证码存入session
-        session.setAttribute("kaptcha",text);
+        //session.setAttribute("kaptcha",text);
+        //验证码的归属
+        String kaptchaOwner = ForumUtil.generateUUID();
+        //存入cookie
+        Cookie cookie = new Cookie("kaptcharOwner",kaptchaOwner);
+        //设置cookie时长
+        cookie.setMaxAge(60);
+        //有效路径 全局
+        cookie.setPath(contextPath);
+        //响应给客户端
+        response.addCookie(cookie);
+
+        //将验证码存入redis
+        String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(redisKey,text,60,TimeUnit.SECONDS);
+
         //将图片输出给浏览器
         //给浏览器声明返回什么样的数据
         response.setContentType("image/png");
@@ -135,11 +153,18 @@ public class LoginController implements ForumConstant {
                         String code,
                         boolean rememberme,
                         Model model,
-                        HttpSession session,
+                        /*HttpSession session,*/
+                        @CookieValue("kaptcharOwner")String kaptcharOwner,
                         HttpServletResponse response){
 
         //判断验证码
-        String kaptcha = (String) session.getAttribute("kaptcha");
+        //String kaptcha = (String) session.getAttribute("kaptcha");
+        String kaptcha = null;
+        //如果存入cookie的临时码还有效
+        if (StringUtils.isNotBlank(kaptcharOwner)){
+            String redisKey = RedisKeyUtil.getKaptchaKey(kaptcharOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
+        }
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确!");
             return "/site/login";

@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.*;
 
 
 @Mapper
+@Deprecated   //不推荐使用的注解
 public interface LoginTicketMapper {
 
     //插入一条数据，自动生成的值注入给bean对象，注入给那个属性（keyProperty = "id"），
