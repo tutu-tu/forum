@@ -1,7 +1,9 @@
 package com.plantrice.forum.controller;
 
+import com.plantrice.forum.entity.Event;
 import com.plantrice.forum.entity.Page;
 import com.plantrice.forum.entity.User;
+import com.plantrice.forum.event.EventProducer;
 import com.plantrice.forum.service.FollowService;
 import com.plantrice.forum.service.UserService;
 import com.plantrice.forum.util.ForumConstant;
@@ -14,10 +16,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 关注操作的表现层
+ */
 @Controller
 public class FollowController implements ForumConstant {
 
@@ -25,16 +29,25 @@ public class FollowController implements ForumConstant {
     private FollowService followService;
     @Autowired
     private UserService userService;
-
     @Autowired
     private HostHolder hostHolder;
+    @Autowired
+    private EventProducer eventProducer;
 
     @RequestMapping(path = "/follow", method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType, int entityId) {
         User user = hostHolder.getUser();
-
         followService.follow(user.getId(), entityType, entityId);
+
+        //触发关注事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);
+        eventProducer.fireEvent(event);
 
         return ForumUtil.getJSONString(0, "已关注!");
     }

@@ -42,7 +42,6 @@ public class CommentService {
         if (comment == null) {
             throw new IllegalArgumentException("参数不能为空!");
         }
-
         // 添加评论
         comment.setContent(HtmlUtils.htmlEscape(comment.getContent()));
         comment.setContent(sensitiveFilter.filter(comment.getContent()));
@@ -57,5 +56,9 @@ public class CommentService {
         return rows;
     }
 
+    //通过id查询整张表的数据
+    public Comment findCommentById(int id){
+        return commentMapper.selectCommentById(id);
+    }
 
 }

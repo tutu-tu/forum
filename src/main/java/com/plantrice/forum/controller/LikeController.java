@@ -1,7 +1,10 @@
 package com.plantrice.forum.controller;
 
+import com.plantrice.forum.entity.Event;
 import com.plantrice.forum.entity.User;
+import com.plantrice.forum.event.EventProducer;
 import com.plantrice.forum.service.LikeService;
+import com.plantrice.forum.util.ForumConstant;
 import com.plantrice.forum.util.ForumUtil;
 import com.plantrice.forum.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +16,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 点赞的表现层
+ */
 @Controller
-public class LikeController {
+public class LikeController implements ForumConstant {
 
     @Autowired
     private HostHolder hostHolder;
     @Autowired
     private LikeService likeService;
+    @Autowired
+    private EventProducer eventProducer;
 
     //异步刷新，点赞
     @RequestMapping(path = "/like",method = RequestMethod.POST)
     @ResponseBody
-    public String like(int entityType, int entityId, int entityUserId){
+    public String like(int entityType, int entityId, int entityUserId,int postId){
         User user = hostHolder.getUser();
         //点赞
         likeService.like(user.getId(),entityType,entityId,entityUserId);
@@ -35,6 +43,18 @@ public class LikeController {
         Map<String,Object> map = new HashMap<>();
         map.put("likeCount",likeCount);
         map.put("likeStatus",likeStatus);
+
+        //触发点赞事件，双重能力，点赞是发送消息，取消赞不需要发送消息，膈应人
+        if (likeStatus == 1){
+            Event event = new Event()
+                    .setTopic(TOPIC_LIKE)
+                    .setUserId(hostHolder.getUser().getId())
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId",postId);
+            eventProducer.fireEvent(event);
+        }
         return ForumUtil.getJSONString(0,null,map);
     }
 }
